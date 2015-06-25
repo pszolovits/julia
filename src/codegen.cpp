@@ -2150,12 +2150,8 @@ static bool emit_known_call(jl_cgval_t *ret, jl_value_t *ff,
 // returns true if the call has been handled
 {
     if (jl_typeis(ff, jl_intrinsic_type)) {
-        if (emit_typed_intrinsic(ret, (intrinsic)*(uint32_t*)jl_data_ptr(ff),
-                              args, nargs, ctx))
-            return true;
-        Value *v = emit_intrinsic((intrinsic)*(uint32_t*)jl_data_ptr(ff),
+        *ret = emit_intrinsic((intrinsic)*(uint32_t*)jl_data_ptr(ff),
                               args, nargs, ctx);
-        *ret = mark_julia_type(v, expr_type(expr,ctx));
         return true;
     }
     if (!jl_is_func(ff)) {
@@ -4010,10 +4006,12 @@ static Function *emit_function(jl_lambda_info_t *lam)
 
     size_t i;
     for(i=0; i < nreq; i++) {
-        jl_sym_t *argname = jl_decl_var(jl_cellref(largs,i));
+        jl_value_t *arg = jl_cellref(largs,i);
+        jl_sym_t *argname = jl_decl_var(arg);
         jl_varinfo_t &varinfo = ctx.vars[argname];
         varinfo.isArgument = true;
-        varinfo.value = mark_julia_type((Value*)NULL, jl_any_type);
+        jl_value_t *ty = lam->specTypes ? jl_nth_slot_type(lam->specTypes, i) : (jl_value_t*)jl_any_type;
+        varinfo.value = mark_julia_type((Value*)NULL, ty);
     }
     if (va) {
         jl_varinfo_t &varinfo = ctx.vars[ctx.vaName];

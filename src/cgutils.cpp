@@ -610,10 +610,6 @@ static Type *julia_type_to_llvm(jl_value_t *jt)
     return jl_pvalue_llvmt;
 }
 
-static Type *julia_type_to_llvm(const jl_cgval_t &jt) {
-    return julia_type_to_llvm(jt.typ);
-}
-
 static Type *julia_struct_to_llvm(jl_value_t *jt)
 {
     // this function converts a Julia Type into the equivalent LLVM struct
